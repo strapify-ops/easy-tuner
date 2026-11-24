@@ -31,6 +31,7 @@ final class TunerEngine: ObservableObject {
     var isInTune: Bool { hearing && abs(cents) <= Self.inTuneCents }
 
     func start() {
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return }  // unit tests: no mic
         AVAudioApplication.requestRecordPermission { ok in
             Task { @MainActor in
                 self.mic = ok ? .granted : .denied

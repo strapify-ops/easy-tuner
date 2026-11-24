@@ -3,7 +3,7 @@ on: [push, workflow_dispatch]
 jobs:
   ios:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - run: brew install xcodegen && xcodegen generate
@@ -13,4 +13,4 @@ jobs:
           UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
           echo "Simulator $UDID"
           xcodebuild -project EasyTuner.xcodeproj -scheme EasyTuner \
-            -destination "id=$UDID" CODE_SIGNING_ALLOWED=NO test 2>&1 | tee log.txt | grep -E "error:|Test Case .*(passed|failed)|Executed|SUCCEEDED|FAILED" || true; grep -q "TEST SUCCEEDED" log.txt
+            -destination "id=$UDID" CODE_SIGNING_ALLOWED=NO -test-timeouts-enabled YES -maximum-test-execution-time-allowance 120 test 2>&1 | tee log.txt | grep -E "error:|Test Case .*(passed|failed)|Executed|SUCCEEDED|FAILED" || true; grep -q "TEST SUCCEEDED" log.txt
