@@ -17,16 +17,16 @@ final class PitchTests: XCTestCase {
             for rate in [44100.0, 48000.0] {
                 let f = YIN.pitch(pluck(s.frequency, rate: rate), sampleRate: rate)
                 XCTAssertNotNil(f, "\(s.name)\(s.octave) at \(rate)")
-                XCTAssertLessThan(abs(cents(f!, s.frequency)), 2, "\(s.name)\(s.octave) at \(rate): got \(f!)")
+                XCTAssertLessThan(abs(centsOff(f!, s.frequency)), 2, "\(s.name)\(s.octave) at \(rate): got \(f!)")
             }
         }
     }
 
     func testDetuneDirection() {
         let low = YIN.pitch(pluck(108), sampleRate: 48000)!
-        XCTAssertLessThan(cents(low, 110), -20)
+        XCTAssertLessThan(centsOff(low, 110), -20)
         let high = YIN.pitch(pluck(112), sampleRate: 48000)!
-        XCTAssertGreaterThan(cents(high, 110), 20)
+        XCTAssertGreaterThan(centsOff(high, 110), 20)
     }
 
     func testNearestString() {

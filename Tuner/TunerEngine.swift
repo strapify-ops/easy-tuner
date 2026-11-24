@@ -123,8 +123,8 @@ final class TunerEngine: ObservableObject {
         let string = lockedString ?? GuitarString.nearest(to: f)
         // Guitar strings ring with strong overtones; fold an octave error back toward the target.
         var f = f
-        while cents(f, string.frequency) > 700 { f /= 2 }
-        while cents(f, string.frequency) < -700 { f *= 2 }
+        while centsOff(f, string.frequency) > 700 { f /= 2 }
+        while centsOff(f, string.frequency) < -700 { f *= 2 }
 
         if string != target { recent.removeAll() }
         target = string
@@ -134,7 +134,7 @@ final class TunerEngine: ObservableObject {
         let median = recent.sorted()[recent.count / 2]
 
         frequency = median
-        let c = max(-50, min(50, cents(median, string.frequency)))
+        let c = max(-50, min(50, centsOff(median, string.frequency)))
         withAnimation(.easeOut(duration: 0.15)) {
             cents = c
             hearing = true

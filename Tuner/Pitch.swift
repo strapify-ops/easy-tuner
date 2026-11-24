@@ -22,12 +22,12 @@ struct GuitarString: Identifiable, Hashable {
 
     /// The string whose note is closest to `frequency` (in musical distance, not Hz).
     static func nearest(to frequency: Double) -> GuitarString {
-        standard.min { abs(cents(frequency, $0.frequency)) < abs(cents(frequency, $1.frequency)) }!
+        standard.min { abs(centsOff(frequency, $0.frequency)) < abs(centsOff(frequency, $1.frequency)) }!
     }
 }
 
 /// How far `f` is from `target`, in cents (100 cents = one semitone). Negative = too low.
-func cents(_ f: Double, _ target: Double) -> Double { 1200 * log2(f / target) }
+func centsOff(_ f: Double, _ target: Double) -> Double { 1200 * log2(f / target) }
 
 /// YIN pitch detector (de Cheveigné & Kawahara, 2002), tuned for guitar.
 enum YIN {
