@@ -15,6 +15,15 @@ final class TunerEngine: ObservableObject {
     @Published var lockedString: GuitarString?  // nil = auto-detect
     @Published var tuned: Set<Int> = []       // strings that have been held in tune
     @Published var isPlayingTone = false
+    @Published var tuning: Tuning = .standard {
+        didSet {
+            guard tuning != oldValue else { return }
+            tuned = []
+            lockedString = nil
+            target = tuning.strings[0]
+            recent.removeAll()
+        }
+    }
 
     static let inTuneCents = 5.0
 
@@ -121,7 +130,7 @@ final class TunerEngine: ObservableObject {
     }
 
     private func heard(_ f: Double) {
-        let string = lockedString ?? GuitarString.nearest(to: f)
+        let string = lockedString ?? GuitarString.nearest(to: f, in: tuning)
         // Guitar strings ring with strong overtones; fold an octave error back toward the target.
         var f = f
         while centsOff(f, string.frequency) > 700 { f /= 2 }

@@ -21,9 +21,28 @@ struct GuitarString: Identifiable, Hashable {
     ]
 
     /// The string whose note is closest to `frequency` (in musical distance, not Hz).
-    static func nearest(to frequency: Double) -> GuitarString {
-        standard.min { abs(centsOff(frequency, $0.frequency)) < abs(centsOff(frequency, $1.frequency)) }!
+    static func nearest(to frequency: Double, in tuning: Tuning = .standard) -> GuitarString {
+        tuning.strings.min { abs(centsOff(frequency, $0.frequency)) < abs(centsOff(frequency, $1.frequency)) }!
     }
+}
+
+/// The tunings a beginner can pick from.
+enum Tuning: String, CaseIterable, Identifiable {
+    case standard = "Standard"
+    case dropD = "Drop D"
+
+    var id: String { rawValue }
+
+    var strings: [GuitarString] {
+        switch self {
+        case .standard: return GuitarString.standard
+        case .dropD:
+            return [GuitarString(number: 6, name: "D", octave: 2, frequency: 73.42, nickname: "Thickest string")]
+                + GuitarString.standard.dropFirst()
+        }
+    }
+
+    var notes: String { strings.map(\.name).joined(separator: " ") }
 }
 
 /// How far `f` is from `target`, in cents (100 cents = one semitone). Negative = too low.

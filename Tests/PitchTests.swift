@@ -36,6 +36,17 @@ final class PitchTests: XCTestCase {
         XCTAssertEqual(GuitarString.nearest(to: 335).number, 1)
     }
 
+    func testDropD() {
+        let low = Tuning.dropD.strings[0]
+        XCTAssertEqual(low.name, "D")
+        let f = YIN.pitch(pluck(low.frequency), sampleRate: 48000)!
+        XCTAssertLessThan(abs(centsOff(f, 73.42)), 2, "got \(f)")
+        XCTAssertEqual(GuitarString.nearest(to: 74, in: .dropD).name, "D")
+        XCTAssertEqual(GuitarString.nearest(to: 74, in: .dropD).number, 6)
+        XCTAssertEqual(GuitarString.nearest(to: 110, in: .dropD).number, 5)
+        XCTAssertEqual(Tuning.dropD.notes, "D A D G B E")
+    }
+
     func testSilenceGivesNothing() {
         let noise = (0..<4096).map { _ in Float.random(in: -0.01...0.01) }
         XCTAssertNil(YIN.pitch(noise, sampleRate: 48000))

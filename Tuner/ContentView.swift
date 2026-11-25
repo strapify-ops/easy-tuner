@@ -39,7 +39,22 @@ struct ContentView: View {
 
     private var header: some View {
         HStack {
-            Text("Easy Tuner").font(.headline).foregroundStyle(.white.opacity(0.8))
+            Menu {
+                Picker("Tuning", selection: $tuner.tuning) {
+                    ForEach(Tuning.allCases) { t in
+                        Text("\(t.rawValue)  (\(t.notes))").tag(t)
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text(tuner.tuning.rawValue).font(.headline)
+                    Image(systemName: "chevron.down").font(.caption.weight(.bold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 6)
+                .background(Capsule().fill(.white.opacity(0.15)))
+            }
+            .accessibilityLabel("Tuning: \(tuner.tuning.rawValue)")
             Spacer()
             Button { showHelp = true } label: {
                 Label("How to tune", systemImage: "questionmark.circle.fill")
@@ -195,7 +210,7 @@ struct StringPicker: View {
             .padding(.horizontal, 20)
 
             HStack(spacing: 8) {
-                ForEach(GuitarString.standard) { s in
+                ForEach(tuner.tuning.strings) { s in
                     Button { tuner.select(s) } label: { chip(s) }
                         .buttonStyle(.plain)
                         .accessibilityLabel("String \(s.number), \(s.name). \(tuner.tuned.contains(s.number) ? "Tuned" : "")")
@@ -240,6 +255,7 @@ struct HelpView: View {
                 Section("Good to know") {
                     Text("String 6 is the thickest string, nearest your face when you hold the guitar. String 1 is the thinnest.")
                     Text("Not sure which way to turn? Turn a tiny bit and pluck again. If the needle moves the wrong way, turn the other way.")
+                    Text("Drop D: only the thickest string changes. Tune it down from E to D (a little lower) for a heavier sound. Pick it from the menu at the top left.")
                     Text("Tap a string at the bottom to hear what it should sound like.")
                     Text("Way too high? Loosen a lot first, then tune up to the note. Tuning up is more stable than tuning down.")
                 }
