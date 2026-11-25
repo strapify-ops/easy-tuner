@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   upload:
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 45
     env:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -36,6 +36,12 @@ jobs:
       DIST_P12_PASSWORD: ${{ secrets.DIST_P12_PASSWORD }}
       PROFILE_APP: ${{ secrets.PROFILE_APP }}
     steps:
+      - name: Use the newest Xcode (App Store needs the iOS 27 SDK)
+        run: |
+          NEWEST=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "Using $NEWEST"
+          sudo xcode-select -s "$NEWEST/Contents/Developer"
+          xcodebuild -version
       - name: Check the signing secrets are set
         id: ready
         run: |

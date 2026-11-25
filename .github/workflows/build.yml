@@ -2,9 +2,15 @@ name: build
 on: [push, workflow_dispatch]
 jobs:
   ios:
-    runs-on: macos-15
+    runs-on: xcode-27
     timeout-minutes: 25
     steps:
+      - name: Use the newest Xcode (App Store needs the iOS 27 SDK)
+        run: |
+          NEWEST=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "Using $NEWEST"
+          sudo xcode-select -s "$NEWEST/Contents/Developer"
+          xcodebuild -version
       - uses: actions/checkout@v4
       - run: brew install xcodegen && xcodegen generate
       - name: Build + run the pitch tests on a simulator
