@@ -47,6 +47,21 @@ final class PitchTests: XCTestCase {
         XCTAssertEqual(Tuning.dropD.notes, "D A D G B E")
     }
 
+    func testUkuleleAndBanjo() {
+        XCTAssertEqual(Tuning.ukulele.notes, "G C E A")
+        XCTAssertEqual(Tuning.banjo.notes, "G D G B D")
+        for t in [Tuning.ukulele, .banjo] {
+            for s in t.strings {
+                let f = YIN.pitch(pluck(s.frequency), sampleRate: 48000)!
+                XCTAssertLessThan(abs(centsOff(f, s.frequency)), 2, "\(t) \(s.name): got \(f)")
+                XCTAssertEqual(GuitarString.nearest(to: s.frequency * 1.005, in: t).number, s.number)
+            }
+        }
+        XCTAssertEqual(HeadstockStyle.peg(for: 5, tuning: .banjo, style: .threeAndThree).slot, -1)
+        XCTAssertTrue(HeadstockStyle.peg(for: 4, tuning: .ukulele, style: .sixInLine).left)
+        XCTAssertFalse(HeadstockStyle.peg(for: 1, tuning: .ukulele, style: .sixInLine).left)
+    }
+
     func testSilenceGivesNothing() {
         let noise = (0..<4096).map { _ in Float.random(in: -0.01...0.01) }
         XCTAssertNil(YIN.pitch(noise, sampleRate: 48000))

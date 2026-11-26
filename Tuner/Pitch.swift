@@ -26,12 +26,26 @@ struct GuitarString: Identifiable, Hashable {
     }
 }
 
-/// The tunings a beginner can pick from.
+/// The instruments and tunings a beginner can pick from.
 enum Tuning: String, CaseIterable, Identifiable {
-    case standard = "Standard"
-    case dropD = "Drop D"
+    case standard = "Guitar: Standard"
+    case dropD = "Guitar: Drop D"
+    case ukulele = "Ukulele"
+    case banjo = "Banjo (5-string, open G)"
 
     var id: String { rawValue }
+
+    var isGuitar: Bool { self == .standard || self == .dropD }
+
+    /// Short name for the top bar.
+    var shortName: String {
+        switch self {
+        case .standard: return "Guitar"
+        case .dropD: return "Drop D"
+        case .ukulele: return "Ukulele"
+        case .banjo: return "Banjo"
+        }
+    }
 
     var strings: [GuitarString] {
         switch self {
@@ -39,6 +53,21 @@ enum Tuning: String, CaseIterable, Identifiable {
         case .dropD:
             return [GuitarString(number: 6, name: "D", octave: 2, frequency: 73.42, nickname: "Thickest string")]
                 + GuitarString.standard.dropFirst()
+        case .ukulele:   // G C E A, re-entrant (the G is high)
+            return [
+                GuitarString(number: 4, name: "G", octave: 4, frequency: 392.00, nickname: "Top string, nearest your face"),
+                GuitarString(number: 3, name: "C", octave: 4, frequency: 261.63, nickname: "3rd string (the lowest note)"),
+                GuitarString(number: 2, name: "E", octave: 4, frequency: 329.63, nickname: "2nd string"),
+                GuitarString(number: 1, name: "A", octave: 4, frequency: 440.00, nickname: "Bottom string"),
+            ]
+        case .banjo:     // g D G B D
+            return [
+                GuitarString(number: 5, name: "G", octave: 4, frequency: 392.00, nickname: "Short 5th string (peg on the neck)"),
+                GuitarString(number: 4, name: "D", octave: 3, frequency: 146.83, nickname: "4th string"),
+                GuitarString(number: 3, name: "G", octave: 3, frequency: 196.00, nickname: "3rd string"),
+                GuitarString(number: 2, name: "B", octave: 3, frequency: 246.94, nickname: "2nd string"),
+                GuitarString(number: 1, name: "D", octave: 4, frequency: 293.66, nickname: "Bottom string"),
+            ]
         }
     }
 
