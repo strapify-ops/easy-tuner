@@ -7,7 +7,7 @@ options:
 settingGroups:
   common:
     SWIFT_VERSION: "5.9"
-    MARKETING_VERSION: "1.0"
+    MARKETING_VERSION: "1.1"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   EasyTuner:
@@ -22,13 +22,15 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSMicrophoneUsageDescription: Easy Tuner listens to your guitar through the microphone to tell you if each string is in tune. Nothing is recorded or sent anywhere.
         UILaunchScreen: {}
-        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        UIRequiresFullScreen: true
+        # Every orientation and multitasking size, so the iPhone Duo (folded and open) and iPad
+        # get a native layout instead of a letterboxed compatibility window.
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         ITSAppUsesNonExemptEncryption: false
     settings:
       groups: [common]
       base:
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
         PRODUCT_BUNDLE_IDENTIFIER: au.com.strapify.easytuner
         PRODUCT_NAME: EasyTuner
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

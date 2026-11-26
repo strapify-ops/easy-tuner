@@ -7,26 +7,52 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             background.ignoresSafeArea()
-            VStack(spacing: 0) {
-                header
-                Spacer(minLength: 8)
-                if tuner.mic == .denied {
-                    MicDeniedView()
-                } else {
-                    NoteCircle()
-                    Gauge(cents: tuner.cents, active: tuner.hearing, inTune: tuner.isInTune)
-                        .frame(height: 150)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 12)
-                    Guidance()
-                        .padding(.top, 4)
+            GeometryReader { geo in
+                let wide = geo.size.width > geo.size.height * 1.15   // Duo open, landscape, iPad
+                VStack(spacing: 0) {
+                    header
+                    if tuner.mic == .denied {
+                        Spacer()
+                        MicDeniedView()
+                        Spacer()
+                    } else if wide {
+                        HStack(spacing: 24) {
+                            meter(size: min(geo.size.height * 0.42, 260))
+                                .frame(maxWidth: .infinity)
+                            VStack {
+                                Spacer(minLength: 8)
+                                StringPicker()
+                                Spacer(minLength: 8)
+                            }
+                            .frame(maxWidth: 460)
+                        }
+                        .padding(.horizontal, 12)
+                    } else {
+                        Spacer(minLength: 8)
+                        meter(size: min(geo.size.width * 0.55, geo.size.height * 0.3, 280))
+                        Spacer(minLength: 8)
+                        StringPicker()
+                            .padding(.bottom, 12)
+                    }
                 }
-                Spacer(minLength: 8)
-                StringPicker()
-                    .padding(.bottom, 12)
+                .frame(maxWidth: wide ? .infinity : 600)
+                .frame(maxWidth: .infinity)
             }
         }
         .sheet(isPresented: $showHelp) { HelpView() }
+    }
+
+    private func meter(size: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            NoteCircle(size: size)
+            Gauge(cents: tuner.cents, active: tuner.hearing, inTune: tuner.isInTune)
+                .frame(maxWidth: 420)
+                .frame(height: size * 0.7)
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+            Guidance()
+                .padding(.top, 4)
+        }
     }
 
     private var background: some View {
@@ -71,6 +97,7 @@ struct ContentView: View {
 
 struct NoteCircle: View {
     @EnvironmentObject var tuner: TunerEngine
+    var size: CGFloat = 210
 
     var color: Color {
         guard tuner.hearing else { return .gray }
@@ -84,7 +111,7 @@ struct NoteCircle: View {
             Circle().stroke(color, lineWidth: 6)
             VStack(spacing: 0) {
                 Text(tuner.target.name)
-                    .font(.system(size: 96, weight: .bold, design: .rounded))
+                    .font(.system(size: size * 0.46, weight: .bold, design: .rounded))
                 Text("String \(tuner.target.number)")
                     .font(.headline).opacity(0.7)
             }
@@ -93,11 +120,11 @@ struct NoteCircle: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 44))
                     .foregroundStyle(.green, .white)
-                    .offset(x: 70, y: -70)
+                    .offset(x: size * 0.33, y: -size * 0.33)
                     .transition(.scale.combined(with: .opacity))
             }
         }
-        .frame(width: 210, height: 210)
+        .frame(width: size, height: size)
         .animation(.spring(duration: 0.3), value: tuner.isInTune)
         .accessibilityElement(children: .combine)
     }
