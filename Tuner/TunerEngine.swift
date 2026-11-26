@@ -73,6 +73,7 @@ final class TunerEngine: ObservableObject {
         do {
             try session.setCategory(.playAndRecord, mode: .measurement,
                                     options: [.defaultToSpeaker, .allowBluetoothA2DP])
+            try session.setPreferredIOBufferDuration(0.005)   // small hardware buffers = quick taps
             try session.setActive(true)
         } catch { print("session:", error) }
 
@@ -99,7 +100,7 @@ final class TunerEngine: ObservableObject {
         engine.attach(node)
         engine.connect(node, to: engine.mainMixerNode, format: outFormat)
 
-        input.installTap(onBus: 0, bufferSize: 2048, format: format) { [weak self] buffer, _ in
+        input.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
             guard let ch = buffer.floatChannelData?[0] else { return }
             let chunk = Array(UnsafeBufferPointer(start: ch, count: Int(buffer.frameLength)))
             Task { @MainActor in self?.ingest(chunk, rate: rate) }
@@ -118,7 +119,7 @@ final class TunerEngine: ObservableObject {
         samples.append(contentsOf: chunk)
         guard samples.count >= windowSize else { return }
         let window = Array(samples.suffix(windowSize))
-        samples.removeFirst(samples.count - windowSize / 2)   // 50% overlap
+        samples.removeFirst(samples.count - (windowSize - 1024))   // new reading every 1024 samples (~20 ms)
 
         // Ignore our own reference tone and anything too quiet to be a plucked string
         guard !tone.isSounding, YIN.rms(window) > 0.004 else { return }
@@ -139,13 +140,17 @@ final class TunerEngine: ObservableObject {
         if string != target { recent.removeAll() }
         target = string
 
+        // Median of the last 3 readings drops a stray octave jump; a light running average then
+        // steadies the needle without the lag a long median had.
         recent.append(f)
-        if recent.count > 5 { recent.removeFirst() }
+        if recent.count > 3 { recent.removeFirst() }
         let median = recent.sorted()[recent.count / 2]
+        let raw = centsOff(median, string.frequency)
+        let smoothed = hearing && abs(raw - cents) < 30 ? cents + (raw - cents) * 0.45 : raw
 
         frequency = median
-        let c = max(-50, min(50, centsOff(median, string.frequency)))
-        withAnimation(.easeOut(duration: 0.15)) {
+        let c = max(-50, min(50, smoothed))
+        withAnimation(.linear(duration: 0.06)) {
             cents = c
             hearing = true
         }
