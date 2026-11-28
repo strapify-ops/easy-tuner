@@ -33,7 +33,6 @@ final class TunerEngine: ObservableObject {
     private var samples: [Float] = []
     private var recent: [Double] = []
     private var lastHeard = Date.distantPast
-    private var inTuneSince: Date?
     private var silenceTimer: Timer?
     private let haptic = UINotificationFeedbackGenerator()
 
@@ -156,22 +155,33 @@ final class TunerEngine: ObservableObject {
         }
         lastHeard = Date()
 
+        // Add up in-tune time instead of demanding one unbroken stretch: thin strings fade fast
+        // and wobble, so a single stray reading used to reset the clock and the tick never came.
+        // Only a clearly-off reading (outside +-12 cents) or a different string starts over.
+        let now = Date()
+        let step = min(now.timeIntervalSince(lastReading), 0.1)
+        lastReading = now
+        if string.number != inTuneString { inTuneTime = 0; inTuneString = string.number }
         if abs(c) <= Self.inTuneCents {
-            if inTuneSince == nil { inTuneSince = Date() }
-            if let t = inTuneSince, Date().timeIntervalSince(t) > 0.6, !tuned.contains(string.number) {
+            inTuneTime += step
+            if inTuneTime >= 0.3, !tuned.contains(string.number) {
                 tuned.insert(string.number)
                 haptic.notificationOccurred(.success)
             }
-        } else {
-            inTuneSince = nil
+        } else if abs(c) > 12 {
+            inTuneTime = 0
         }
     }
+
+    private var lastReading = Date.distantPast
+    private var inTuneTime: TimeInterval = 0
+    private var inTuneString = 0
 
     private func checkSilence() {
         if hearing && Date().timeIntervalSince(lastHeard) > 1.5 {
             withAnimation(.easeOut(duration: 0.3)) { hearing = false }
             recent.removeAll()
-            inTuneSince = nil
+            inTuneTime = 0
         }
         isPlayingTone = tone.isSounding
     }

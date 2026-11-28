@@ -1,4 +1,4 @@
-# XcodeGen spec. CI: brew install xcodegen && xcodegen generate
+﻿# XcodeGen spec. CI: brew install xcodegen && xcodegen generate
 name: EasyTuner
 options:
   bundleIdPrefix: au.com.strapify
@@ -7,7 +7,7 @@ options:
 settingGroups:
   common:
     SWIFT_VERSION: "5.9"
-    MARKETING_VERSION: "1.3"
+    MARKETING_VERSION: "1.4"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   EasyTuner:
